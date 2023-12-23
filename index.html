@@ -18,22 +18,32 @@
     const sidesInput = document.getElementById('sides');
 
     let sides = parseInt(sidesInput.value);
-    let baseGeometry = new THREE.CircleGeometry(5, sides);
-    let shapeMesh = new THREE.Mesh(baseGeometry, new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true }));
+    let shapeMesh;
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ canvas });
     renderer.setSize(window.innerWidth, window.innerHeight);
 
-    scene.add(shapeMesh);
-    camera.position.z = 20;
+    function createShape() {
+      if (shapeMesh) {
+        scene.remove(shapeMesh);
+      }
+      
+      const baseGeometry = new THREE.CircleGeometry(5, sides);
+      shapeMesh = new THREE.Mesh(baseGeometry, new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true }));
+      
+      scene.add(shapeMesh);
+    }
 
     function updateShape() {
       sides = parseInt(sidesInput.value);
-      baseGeometry = new THREE.CircleGeometry(5, sides);
-      shapeMesh.geometry = baseGeometry;
+      createShape();
     }
+
+    createShape();
+
+    camera.position.z = 20;
 
     const animate = function () {
       requestAnimationFrame(animate);
