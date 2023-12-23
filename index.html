@@ -7,17 +7,21 @@
   <script src="https://threejs.org/build/three.js"></script>
 </head>
 <body>
-  <label for="sides">Enter the number of sides for the base shape:</label>
-  <input type="number" id="sides" value="3" min="3" max="12">
   <button onclick="updateShape()">Update Shape</button>
   <br>
   <canvas id="shapeCanvas" width="800" height="800"></canvas>
   <script>
     const canvas = document.getElementById('shapeCanvas');
     const ctx = canvas.getContext('2d');
-    const sidesInput = document.getElementById('sides');
 
-    let sides = parseInt(sidesInput.value);
+    let sides = prompt('Enter the number of sides for the base shape (3 to 12):');
+    sides = parseInt(sides);
+
+    if (isNaN(sides) || sides < 3 || sides > 12) {
+      alert('Invalid input. Using default value (3 sides).');
+      sides = 3;
+    }
+
     let shapeMesh;
 
     const scene = new THREE.Scene();
@@ -37,7 +41,14 @@
     }
 
     function updateShape() {
-      sides = parseInt(sidesInput.value);
+      sides = prompt('Enter the number of sides for the base shape (3 to 12):');
+      sides = parseInt(sides);
+
+      if (isNaN(sides) || sides < 3 || sides > 12) {
+        alert('Invalid input. Using default value (3 sides).');
+        sides = 3;
+      }
+
       createShape();
     }
 
