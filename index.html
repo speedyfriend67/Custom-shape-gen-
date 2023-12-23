@@ -14,7 +14,11 @@
       <option value="box">Box</option>
       <option value="sphere">Sphere</option>
       <option value="torus">Torus</option>
+      <option value="custom">Custom Polygon</option>
     </select>
+    <br>
+    <label for="customSides">Number of Sides (Custom Polygon):</label>
+    <input type="number" id="customSides" min="3" max="12" step="1" value="5" disabled>
     <br>
     <label for="color">Select Color:</label>
     <input type="color" id="color" value="#00ff00">
@@ -24,11 +28,14 @@
     <br>
     <label for="rotationSpeed">Rotation Speed:</label>
     <input type="range" id="rotationSpeed" min="0.01" max="0.5" step="0.01" value="0.1">
+    <br>
+    <button onclick="generateShape()">Generate</button>
   </div>
   <canvas id="sceneCanvas" width="800" height="600"></canvas>
   <script>
     const canvas = document.getElementById('sceneCanvas');
     const shapeSelect = document.getElementById('shape');
+    const customSidesInput = document.getElementById('customSides');
     const colorInput = document.getElementById('color');
     const sizeInput = document.getElementById('size');
     const rotationSpeedInput = document.getElementById('rotationSpeed');
@@ -38,19 +45,12 @@
     const renderer = new THREE.WebGLRenderer({ canvas });
 
     let currentShape;
-    const shapes = {
-      box: new THREE.BoxGeometry(1, 1, 1),
-      sphere: new THREE.SphereGeometry(1, 32, 32),
-      torus: new THREE.TorusGeometry(1, 0.4, 32, 100),
-    };
 
-    function createShape() {
+    function createShape(geometry) {
       if (currentShape) {
         scene.remove(currentShape);
       }
 
-      const selectedShape = shapes[shapeSelect.value];
-      const geometry = new THREE.BufferGeometry().fromGeometry(selectedShape);
       const material = new THREE.MeshBasicMaterial({ color: colorInput.value, wireframe: true });
       currentShape = new THREE.Mesh(geometry, material);
       scene.add(currentShape);
@@ -63,11 +63,43 @@
       }
     }
 
-    shapeSelect.addEventListener('change', createShape);
+    function generateShape() {
+      if (shapeSelect.value === 'custom') {
+        const sides = parseInt(customSidesInput.value);
+        if (isNaN(sides) || sides < 3 || sides > 12) {
+          alert('Invalid number of sides. Please enter a number between 3 and 12.');
+          return;
+        }
+
+        const radius = 5;
+        const geometry = new THREE.BufferGeometry();
+        const vertices = [];
+
+        for (let i = 0; i < sides; i++) {
+          const angle = (i / sides) * Math.PI * 2;
+          const x = radius * Math.cos(angle);
+          const y = radius * Math.sin(angle);
+          vertices.push(x, y, 0);
+        }
+
+        geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+        createShape(geometry);
+      } else {
+        const selectedShape = new THREE[shapeSelect.value.charAt(0).toUpperCase() + shapeSelect.value.slice(1) + 'Geometry']();
+        createShape(selectedShape);
+      }
+
+      updateSettings();
+    }
+
+    shapeSelect.addEventListener('change', function () {
+      customSidesInput.disabled = shapeSelect.value !== 'custom';
+    });
+
     colorInput.addEventListener('input', updateSettings);
     sizeInput.addEventListener('input', updateSettings);
 
-    createShape(); // Initial shape creation
+    generateShape(); // Initial shape generation
 
     camera.position.z = 5;
 
