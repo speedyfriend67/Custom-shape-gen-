@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>N-Gonal Shapes with Three.js</title>
+  <script src="https://threejs.org/build/three.js"></script>
+</head>
+<body>
+  <label for="sides">Enter the number of sides for the base shape:</label>
+  <input type="number" id="sides" value="3" min="3" max="12">
+  <button onclick="updateShape()">Update Shape</button>
+  <br>
+  <canvas id="shapeCanvas" width="800" height="800"></canvas>
+  <script>
+    const canvas = document.getElementById('shapeCanvas');
+    const ctx = canvas.getContext('2d');
+    const sidesInput = document.getElementById('sides');
+
+    let sides = parseInt(sidesInput.value);
+    let baseGeometry = new THREE.CircleGeometry(5, sides);
+    let shapeMesh = new THREE.Mesh(baseGeometry, new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true }));
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ canvas });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    scene.add(shapeMesh);
+    camera.position.z = 20;
+
+    function updateShape() {
+      sides = parseInt(sidesInput.value);
+      baseGeometry = new THREE.CircleGeometry(5, sides);
+      shapeMesh.geometry = baseGeometry;
+    }
+
+    const animate = function () {
+      requestAnimationFrame(animate);
+      shapeMesh.rotation.x += 0.005;
+      shapeMesh.rotation.y += 0.005;
+      renderer.render(scene, camera);
+    };
+
+    animate();
+  </script>
+</body>
+</html>
