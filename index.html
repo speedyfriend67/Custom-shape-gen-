@@ -3,63 +3,82 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>N-Gonal Shapes with Three.js</title>
+  <title>Advanced 3D Scene with Three.js</title>
   <script src="https://threejs.org/build/three.js"></script>
 </head>
 <body>
-  <button onclick="updateShape()">Update Shape</button>
-  <br>
-  <canvas id="shapeCanvas" width="800" height="800"></canvas>
+  <div id="menu">
+    <h3>Settings</h3>
+    <label for="shape">Select Shape:</label>
+    <select id="shape">
+      <option value="box">Box</option>
+      <option value="sphere">Sphere</option>
+      <option value="torus">Torus</option>
+    </select>
+    <br>
+    <label for="color">Select Color:</label>
+    <input type="color" id="color" value="#00ff00">
+    <br>
+    <label for="size">Size:</label>
+    <input type="range" id="size" min="1" max="10" step="0.1" value="5">
+    <br>
+    <label for="rotationSpeed">Rotation Speed:</label>
+    <input type="range" id="rotationSpeed" min="0.01" max="0.5" step="0.01" value="0.1">
+  </div>
+  <canvas id="sceneCanvas" width="800" height="600"></canvas>
   <script>
-    const canvas = document.getElementById('shapeCanvas');
-    const ctx = canvas.getContext('2d');
-
-    let sides = prompt('Enter the number of sides for the base shape (3 to 12):');
-    sides = parseInt(sides);
-
-    if (isNaN(sides) || sides < 3 || sides > 12) {
-      alert('Invalid input. Using default value (3 sides).');
-      sides = 3;
-    }
-
-    let shapeMesh;
+    const canvas = document.getElementById('sceneCanvas');
+    const shapeSelect = document.getElementById('shape');
+    const colorInput = document.getElementById('color');
+    const sizeInput = document.getElementById('size');
+    const rotationSpeedInput = document.getElementById('rotationSpeed');
 
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const camera = new THREE.PerspectiveCamera(75, canvas.width / canvas.height, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ canvas });
-    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    let currentShape;
+    const shapes = {
+      box: new THREE.BoxGeometry(1, 1, 1),
+      sphere: new THREE.SphereGeometry(1, 32, 32),
+      torus: new THREE.TorusGeometry(1, 0.4, 32, 100),
+    };
 
     function createShape() {
-      if (shapeMesh) {
-        scene.remove(shapeMesh);
-      }
-      
-      const baseGeometry = new THREE.CircleGeometry(5, sides);
-      shapeMesh = new THREE.Mesh(baseGeometry, new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true }));
-      
-      scene.add(shapeMesh);
-    }
-
-    function updateShape() {
-      sides = prompt('Enter the number of sides for the base shape (3 to 12):');
-      sides = parseInt(sides);
-
-      if (isNaN(sides) || sides < 3 || sides > 12) {
-        alert('Invalid input. Using default value (3 sides).');
-        sides = 3;
+      if (currentShape) {
+        scene.remove(currentShape);
       }
 
-      createShape();
+      const selectedShape = shapes[shapeSelect.value];
+      const geometry = new THREE.BufferGeometry().fromGeometry(selectedShape);
+      const material = new THREE.MeshBasicMaterial({ color: colorInput.value, wireframe: true });
+      currentShape = new THREE.Mesh(geometry, material);
+      scene.add(currentShape);
     }
 
-    createShape();
+    function updateSettings() {
+      if (currentShape) {
+        currentShape.material.color.set(colorInput.value);
+        currentShape.scale.set(sizeInput.value, sizeInput.value, sizeInput.value);
+      }
+    }
 
-    camera.position.z = 20;
+    shapeSelect.addEventListener('change', createShape);
+    colorInput.addEventListener('input', updateSettings);
+    sizeInput.addEventListener('input', updateSettings);
+
+    createShape(); // Initial shape creation
+
+    camera.position.z = 5;
 
     const animate = function () {
       requestAnimationFrame(animate);
-      shapeMesh.rotation.x += 0.005;
-      shapeMesh.rotation.y += 0.005;
+
+      if (currentShape) {
+        currentShape.rotation.x += rotationSpeedInput.value;
+        currentShape.rotation.y += rotationSpeedInput.value;
+      }
+
       renderer.render(scene, camera);
     };
 
